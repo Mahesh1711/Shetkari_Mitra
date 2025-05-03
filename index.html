@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/ShetkariMitra_logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>ShetkariMitra</title>
+    <style>
+        .text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .container:hover .text {
+            opacity: 1;
+        }
+    </style>
+    </style>
+</head>
+
+<body>
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                <img src="img/ShetkariMitra_logo.png" alt="Shetkari Mitra Logo" class="nav__logo-icon"><span class="nav__logo-text">shetkari_mitra</span>
+            </a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="#home" class="nav__link active-link">Home</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="#about" class="nav__link">About</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="#products" class="nav__link">Products</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="#faqs" class="nav__link">FAQs</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="#contact" class="nav__link">Contact Us</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="bot.html" class="nav__link" >Chatbot</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="login.html" class="nav__link" >logout</a>
+                    </li>
+                </ul>
+
+                <div class="nav__close" id="nav-close">
+                    <i class="ri-close-line"></i>
+                </div>
+            </div>
+
+            <div class="nav__btns">
+                <i class="ri-moon-line change-theme" id="theme-button"></i>
+
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class="ri-menu-line"></i>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <br>
+        <br>
+        <br>
+        <br></main>
+        <!--==================== WEATHER ====================-->
+        <title> ⛅ Live Weather Update</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                background: white;
+                padding: 20px;
+            }
+           .weather-section {
+    text-align: center;
+    padding: 20px;
+    background: #ffff; /*no-repeat center center;
+    background-size: cover; /* Ensures the image covers the entire section */
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    color: black; /* Ensures text is readable */
+}
+
+            #weather-container p {
+                font-size: 18px;
+                margin: 5px 0;
+            }
+        </style>
+        </head>
+        <body>
+
+        <main class="main">
+            <!-- Weather Section -->
+            <section id="weather" class="weather-section">
+                <h2> ⛅Live Weather Update</h2>
+                <div id="weather-container">
+                    <p>Fetching live weather data...</p>
+                </div>
+            </section>
+            <script>
+                const weatherStackApiKey = "8f4792464e0b5a4c695e1c56133e67a2"; // Replace with your WeatherStack API key
+
+                async function getUserLocation() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            async (position) => {
+                                const lat = position.coords.latitude;
+                                const lon = position.coords.longitude;
+                                await getCityName(lat, lon);
+                            },
+                            (error) => {
+                                document.getElementById("weather-container").innerHTML = `<p style="color:red;">Location access denied. Please enable GPS.</p>`;
+                            }
+                        );
+                    } else {
+                        document.getElementById("weather-container").innerHTML = `<p style="color:red;">Geolocation is not supported by your browser.</p>`;
+                    }
+                }
+
+                async function getCityName(lat, lon) {
+                    try {
+                        const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+                        const geoData = await geoResponse.json();
+
+                        if (!geoData || !geoData.address) {
+                            throw new Error("Location data not available.");
+                        }
+
+                        // Try different fields to get the best location name
+                        const city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || "Unknown Location";
+
+                        // Use city name if available; otherwise, use lat/lon for weather fetching
+                        if (city !== "Unknown Location") {
+                            fetchWeather(city);
+                        } else {
+                            fetchWeatherByCoords(lat, lon);
+                        }
+                    } catch (error) {
+                        document.getElementById("weather-container").innerHTML = `<p style="color:red;">Error fetching location details: ${error.message}</p>`;
+                    }
+                }
+
+                async function fetchWeather(location) {
+                    try {
+                        const response = await fetch(`http://api.weatherstack.com/current?access_key=${weatherStackApiKey}&query=${location}`);
+
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+
+                        const data = await response.json();
+                        if (!data.current || !data.location) {
+                            throw new Error("Invalid response from WeatherStack. Check API key.");
+                        }
+
+                        displayWeather(data);
+                    } catch (error) {
+                        document.getElementById("weather-container").innerHTML = `<p style="color:red;">Error fetching weather data: ${error.message}</p>`;
+                    }
+                }
+
+                async function fetchWeatherByCoords(lat, lon) {
+                    try {
+                        const response = await fetch(`http://api.weatherstack.com/current?access_key=${weatherStackApiKey}&query=${lat},${lon}`);
+
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+
+                        const data = await response.json();
+                        if (!data.current || !data.location) {
+                            throw new Error("Invalid response from WeatherStack. Check API key.");
+                        }
+
+                        displayWeather(data);
+                    } catch (error) {
+                        document.getElementById("weather-container").innerHTML = `<p style="color:red;">Error fetching weather data: ${error.message}</p>`;
+                    }
+                }
+
+                function displayWeather(data) {
+                    const city = data.location.name;
+                    const temperature = data.current.temperature || "N/A";
+                    const humidity = data.current.humidity || "N/A";
+                    const weatherDescription = data.current.weather_descriptions ? data.current.weather_descriptions[0] : "Unknown";
+                    const rain = data.current.precip || "0"; // Rain status (precipitation)
+
+                    document.getElementById("weather-container").innerHTML = `
+                        <p><strong>📍Location:</strong> ${city}  ,  <strong>☀️🌡Temperature:</strong> ${temperature}°C</p>
+                        <p><strong>🌤Condition:</strong> ${weatherDescription}  ,  <strong>🌫Humidity:</strong> ${humidity}%</p>
+                        <p><strong>🌧Rain:</strong> ${rain} mm</p>
+                    `;
+                }
+
+                getUserLocation();
+            </script>
+            <!--==================== HOME ====================-->
+        <section class="home" id="home">
+            <div class="home__container container grid">
+                <img src="img/home.png" alt="" class="home__img">
+
+                <div class="home__data">
+                    <h1 class="home__title">
+                        Urban Solution <br>for <a style="color:hsl(var(--hue), 24%, 32%);">Green</a> cities.
+                    </h1>
+                    <p class="home__description">
+                        Offering all-in-one plant care kits featuring disease detection tools and vermicompost making
+                        solutions.Also Offering soil testing.
+                    </p>
+                    <a href="#about" class="button button--flex">
+                        Explore <i class="ri-arrow-right-down-line button__icon"></i>
+                    </a>
+                </div>
+
+
+            </div>
+        </section>
+        <!--==================== ABOUT ====================-->
+        <section class="about section container" id="info">
+            <div class="about__container grid">
+                <img src="img/about.png" alt="" class="about__img" style="height: min-content;">
+
+                <div class="about__data">
+                    <h2 class="section__title about__title">
+                        Take A picture or <br> Upload the image
+                    </h2>
+
+
+
+                    <div class="about__details">
+                        <p class="about__details-description">
+                            <i class="ri-checkbox-fill about__details-icon"></i>
+                            All image formats are supported.
+                        </p>
+                        <p class="about__details-description">
+                            <i class="ri-checkbox-fill about__details-icon"></i>
+                            Diagnoses blurry images as well.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="about section container" id="about">
+            <div class="about__container grid">
+
+                <div class="about__data">
+                    <h2 class="section__title about__title">
+                        Await for disease diagnosis
+                    </h2>
+
+
+
+                    <div class="about__details">
+                        <p class="about__details-description">
+                            <i class="ri-checkbox-fill about__details-icon"></i>
+                            Answers within seconds.
+                        </p>
+                        <p class="about__details-description">
+                            <i class="ri-checkbox-fill about__details-icon"></i>
+                            99.2 % accuracy.
+                        </p>
+                    </div>
+                </div>
+                <img src="img/aboutt.png" alt="" class="about__img" style="height: min-content;">
+            </div>
+        </div>
+
+            <!--=================== Features Section ===========================-->
+            <div class="features-wrapper">
+                <!-- Plant Detection -->
+                <div class="feature-box fade-in" style="animation-delay: 0s;">
+                    <h2>🌿 Plant Disease Detection</h2>
+                    <p>Check Result.</p>
+                    <button onclick="openImageUpload()">Plant Detection</button>
+                </div>
+
+                <!-- Soil Testing -->
+                <div class="feature-box fade-in" style="animation-delay: 1s;">
+                    <h2>🌾 Soil Testing / माती परीक्षण</h2>
+                    <p>Soil Testing Result.</p>
+                    <button onclick="redirectToResultsPage()">Soil Testing</button>
+                </div>
+
+                <!-- Fertilizer Calculator -->
+                <div class="feature-box fade-in" style="animation-delay: 2s;">
+                    <h2>🌱 Fertilizer Calculator</h2>
+                    <p>Calculate the right amount of fertilizer for your crops.</p>
+                    <button onclick="openFertilizerCalculator()">Calculate Fertilizer</button>
+                </div>
+            </div>
+
+            <!-- CSS -->
+            <style>
+                .features-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    gap: 30px;
+                    flex-wrap: wrap;
+                    max-width: 1200px;
+                    margin: 50px auto;
+                }
+
+                .feature-box {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    width: 300px;
+                    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+                    text-align: center;
+                    opacity: 0;
+                    animation: fadeIn 1s forwards;
+                }
+
+                .fade-in {
+                    animation-name: fadeIn;
+                    animation-duration: 1s;
+                    animation-fill-mode: forwards;
+                }
+
+                @keyframes fadeIn {
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                .feature-box h2 {
+                    margin-top: 0;
+                    color: #3E6553;
+                }
+
+                .feature-box p {
+                    color: #444;
+                }
+
+                .feature-box button {
+                    background: #28a745;
+                    color: white;
+                    padding: 10px 15px;
+                    border: none;
+                    font-size: 16px;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    margin-top: 10px;
+                }
+
+                .feature-box button:hover {
+                    background: #218838;
+                }
+
+                @media screen and (max-width: 768px) {
+                    .features-wrapper {
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                }
+            </style>
+
+            <!-- JS -->
+            <script>
+                function redirectToResultsPage(){
+                    window.location.href = "results.html";
+                }
+                function openImageUpload() {
+                    window.location.href = "Plant-disease.html";
+                }
+                function openFertilizerCalculator() {
+                    window.location.href = "fertilizer_calculator.html";
+                }
+            </script>
+
+            <!--==================== STEPS ====================-->
+            <section class="steps section container">
+                <div class="steps__bg">
+                    <h2 class="section__title-center steps__title">
+                        Steps to start your <br> Vermicomposting right
+                    </h2>
+
+                    <div class="steps__container grid">
+                        <div class="steps__card steps__card1">
+                            <div class="overlay">
+                                <div class="text">Collect your Organic Waste☘️<br>It can be vegetable peels, leftovers,
+                                    stems, leaves etc🗑️</div>
+                            </div>
+                            <div class="steps__card-number">01</div>
+
+                        </div>
+
+                        <div class="steps__card steps__card2">
+                            <a href="https://www.google.com/maps/search/vermicompost+near+me/@19.0427825,72.8978114,11z/data=!3m1!4b1?entry=ttu"
+                                target="_blank">
+                                <div class="overlay">
+                                    <br><br><br><br><br>
+                                    <div class="text">📍click to view our stores<br>Bring your organic matter at the
+                                        vermi store🏪</div>
+                                </div>
+                                <div class="steps__card-number">02</div>
+                            </a>
+                        </div>
+
+
+                        <div class="steps__card steps__card3">
+                            <div class="overlay">
+                                <div class="text">Collect the Vermicompost equivalent to your waste🌱<br>Keep collecting
+                                    and recycling♻️</div>
+                            </div>
+                            <div class="steps__card-number">03</div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!--==================== PRODUCTS ====================-->
+            <section class="product section container" id="products">
+                <h2 class="section__title-center">
+                    Check out our <br> products
+                </h2>
+
+
+                <div class="product__container grid">
+                    <article class="product__card">
+                        <a href="https://agribegri.com/products/buy-katyayani-enriched-vermicompost-fertilizer-online--agribegri.php">
+                        <img src="img/product1.png" alt="" class="product__img">
+                        </a>
+                        <h3 class="product__title">Vermi-Compost</h3>
+                        <span class="product__price">Rs 1999</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+
+                    <article class="product__card">
+                        <a href="https://agribegri.com/products/buy-ecotika-blended-cow-dung-3-2-1-organic-fertilizer-npk-ratio-is-05-02-05.php">
+                        <img src="img/product2.png" alt="" class="product__img">
+                        </a>
+                        <h3 class="product__title">Cow Dung</h3>
+                        <span class="product__price">Rs 1199</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+
+                    <article class="product__card">
+                        <a href="https://agribegri.com/products/buy-ebs-npk-191919-water-soluble-fertilizer-online.php">
+                        <img src="img/product3.png" alt="" class="product__img">
+                        </a>
+                        <h3 class="product__title">19:19:19</h3>
+                        <span class="product__price">Rs 799</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+
+                    <article class="product__card">
+                        <a href="https://agribegri.com/products/buy-vnr-harsh-brinjal-seeds.php">
+                        <img src="img/product4.png" alt="" class="product__img">
+                        </a>
+                        <h3 class="product__title">Brinjal Seeds</h3>
+                        <span class="product__price">Rs 599</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+
+                    <article class="product__card">
+                        <a href="https://agribegri.com/products/multiplex-np-plus-npk-126100-fertilizer.php">
+                        <img src="img/product5.png" alt="" class="product__img">
+                        </a>>
+                        <h3 class="product__title">24:24:0</h3>
+                        <span class="product__price">Rs 1099</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+
+                    <article class="product__card">
+
+                        <a href="https://www.amazon.in/Urea-Fertilizer-Plants-Garden-garden/dp/B0DY8BXWYL/ref=sr_1_9?crid=10HOHOT8DV37Q&dib=eyJ2IjoiMSJ9.RP_fE1sFlu0N4iAzg4RiOLl4B61xRY4N8cG0mImd8GWjdUTN-b96o9VxEQqgeMxe0oGGXDelL-CA6rOnmFnVKLR08S5EHgJOhwxXamZtPTMmm7zojPBFrHOpkXO5MR0tsgQq-sn9KEnyohn8zfYIIGDx-6vEHuJvl_zlLcOLXjrqaFSB0jUpoQcSDvya7ZhNKDedZknYuEbWYmKcS0BtW0xp6U9EnDtF6rLOuhs0QVCy8w_ahq0j7zjbGQXsueLfGFs2R4ZiFL5tJdjlNjlE9UuqaSMT7lSXIrQMEU2AsxgYljKa7FE9CscjbKbu93J0o5hJUz6nWnYtEBenvtFlylGadTv4-p3L4F5MNQy_TsXwMjNBGKXR23fyopxIj2J78FhC-pLM7nZoG8FDawpVrJN3msGn9taQBuDj5lPYpwwOYUSZlFXYur7mA803YCRI.uuTIFGB7Af5XO_3_jN4KgfvoFc28Dh656PSO9rChWwk&dib_tag=se&keywords=urea&qid=1743059044&sprefix=urea+%2Caps%2C254&sr=8-9">
+                        <img src="img/product6.png" alt="" class="product__img">
+                        </a>
+                        <h3 class="product__title">Green Plant</h3>
+                        <span class="product__price">Rs 899</span>
+
+                        <button class="button--flex product__button">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                    </article>
+                </div>
+            </section>
+
+            <!--==================== QUESTIONS ====================-->
+            <section class="questions section" id="faqs">
+                <h2 class="section__title-center questions__title container">
+                    Some common questions <br> were often asked
+                </h2>
+
+                <div class="questions__container container grid">
+                    <div class="questions__group">
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    How can I identify plant diseases?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    Look for symptoms such as spots, wilting, discoloration, or abnormal growth patterns
+                                    on leaves, stems, or fruit. Just scan and upload image to us and we'll do our best
+                                    to help you.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    What are common plant diseases and their causes?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    Common diseases include powdery mildew, blight, and root rot, often caused by fungi,
+                                    bacteria, or environmental stressors.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    How do I prevent plant diseases?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    Practice good garden hygiene, including proper watering, spacing, and sanitation,
+                                    and consider using disease-resistant varieties.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="questions__group">
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    What are organic methods for treating plant diseases?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    Options include neem oil, copper fungicides, and beneficial insects like ladybugs or
+                                    predatory mites.
+
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    How do I treat plant diseases without harming beneficial insects?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    Use targeted treatments, such as insecticidal soaps or horticultural oils, and avoid
+                                    broad-spectrum pesticides.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="questions__item">
+                            <header class="questions__header">
+                                <i class="ri-add-line questions__icon"></i>
+                                <h3 class="questions__item-title">
+                                    When should I seek professional help for plant diseases?
+                                </h3>
+                            </header>
+
+                            <div class="questions__content">
+                                <p class="questions__description">
+                                    If symptoms persist despite home treatments, or if you're unsure about the
+                                    diagnosis, consult with a local extension service or plant health specialist.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!--==================== CONTACT ====================-->
+            <section class="contact section container" id="contact">
+                <div class="contact__container grid">
+                    <div class="contact__box">
+                        <h2 class="section__title">
+                            Reach out to us today <br> via any of the given <br> information
+                        </h2>
+                        <div class="contact__data">
+                            <div class="contact__information">
+                                <h3 class="contact__subtitle">Call us for instant support</h3>
+                                <span class="contact__description">
+                                    <i class="ri-phone-line contact__icon"></i>
+                                    +9545369819
+                                </span>
+                            </div>
+                            <div class="contact__information">
+                                <h3 class="contact__subtitle">Write us by mail</h3>
+                                <span class="contact__description">
+                                    <i class="ri-mail-line contact__icon"></i>
+                                    help@shetkarimitra.com
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="" class="contact__form" id="contactForm">
+                        <div class="contact__inputs">
+                            <div class="contact__content">
+                                <input type="email" placeholder=" " class="contact__input" id="email" required>
+                                <label for="email" class="contact__label">Email</label>
+                            </div>
+
+                            <div class="contact__content">
+                                <input type="text" placeholder=" " class="contact__input" id="subject" required>
+                                <label for="subject" class="contact__label">Subject</label>
+                            </div>
+
+                            <div class="contact__content contact__area">
+                                <textarea name="message" placeholder=" " class="contact__input" id="message"
+                                    required></textarea>
+                                <label for="message" class="contact__label">Message</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="button button--flex">
+                            Send Message
+                            <i class="ri-arrow-right-up-line button__icon"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <script>
+                document.getElementById('contactForm').addEventListener('submit', function (event) {
+                    event.preventDefault(); // Prevent the default form submission
+                    var email = document.getElementById('email').value.trim();
+                    var subject = document.getElementById('subject').value.trim();
+                    var message = document.getElementById('message').value.trim();
+                    if (email === '' || subject === '' || message === '') {
+                        alert('Please fill in all fields.');
+                        return; // Stop further execution
+                    }
+                    alert('Message sent successfully!');
+                    document.getElementById('contactForm').reset();
+                });
+            </script>
+
+    </main>
+    <footer class="footer section">
+        <div class="footer__container container grid">
+            <div class="footer__content">
+                <a href="#" class="footer__logo">
+                    <i class="ShetkariMitra_logo footer__logo-icon"></i> ShetkariMitra
+                </a>
+
+                <h3 class="footer__title">
+                    Subscribe to our newsletter <br> to stay update
+                </h3>
+
+                <div class="footer__subscribe">
+                    <input type="email" placeholder="Enter your email" class="footer__input">
+
+                    <button class="button button--flex footer__button">
+                        Subscribe
+                        <i class="ri-arrow-right-up-line button__icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer__content">
+                <h3 class="footer__title">Our Vermicompost Stores</h3>
+                <!-- Embedded Google Maps -->
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3949.6369148751414!2d73.8439248!3d18.5261982!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c07e4111123b%3A0x3f92335c2e5c8400!2sP.E.S.%20Modern%20College%20of%20Engineering!5e0!3m2!1sen!2sin!4v1712033679334
+                "
+                    width="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="footer__content">
+                <h3 class="footer__title">Contact Us</h3>
+                <ul class="footer__data">
+                    <li class="footer__information">+9545369819</li>
+                    <div class="footer__social">
+                        <a href="https://www.facebook.com/share/15zb5VZiid/?mibextid=qi2Omg" class="footer__social-link">
+                            <i class="ri-facebook-fill"></i>
+                        </a>
+                        <a href="https://www.instagram.com/_mahesh._.17?igsh=c3NjYXlkc214dmE5" class="footer__social-link">
+                            <i class="ri-instagram-line"></i>
+                        </a>
+                        <a href="https://x.com/Mahesh79862568?t=b-nSulgvTdb66E6XOC0a_w&s=08 " class="footer__social-link">
+                            <i class="ri-twitter-fill"></i>
+                        </a>
+                    </div>
+                </ul>
+            </div>
+        </div>
+        </div>
+
+        <p class="footer__copy">&#169; shetkarimitra. All rigths reserved</p>
+    </footer>
+    <a href="#" class="scrollup" id="scroll-up">
+        <i class="ri-arrow-up-fill scrollup__icon"></i>
+    </a>
+    <!-- Js Files  -->
+    <script src="js/scroll.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/dropdownImage.js"></script>
+        <script src="js/predictions.js"></script>
+</body>
+</body>
+</html>
